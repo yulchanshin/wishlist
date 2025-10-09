@@ -9,11 +9,11 @@ export const aj = arcjet ({
     characteristics: ["ip.src"],
     rules: [
         //shield protedcts the app from comment attacts like SQL Injection, XSS, etc
-        shield({mode:"Live"}),
+        shield({mode:"LIVE"}),
 
         //block all the bots except search engines
         detectBot({
-            mode:"Live",
+            mode:"LIVE",
             allow: ["CATEGORY:SEARCH_ENGINE"]}
 
             //you can access the full list at
@@ -23,7 +23,7 @@ export const aj = arcjet ({
         //rate limiting
 
         tokenBucket({
-            mode:"Live",
+            mode:"LIVE",
             refillRate: 5, 
             interval: 10,
             capacity: 10
