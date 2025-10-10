@@ -20,8 +20,10 @@ app.use(helmet()) //this is a security middleware that helps to protect the app 
 app.use(morgan('dev')) //logs the requests
 
 
-//apply arcjet rate-limit to all routes
-app.use(async (req, resizeBy, next) => {
+//apply arcjet rate-limit to all routes, COMMSNTED OUT TEMPORARILY FOR TESTING
+
+/*
+app.use(async (req, res, next) => {
     try {
         const decision = await aj.protect(req, {
             requested: 1 //each req consumes 1 token
@@ -50,6 +52,8 @@ app.use(async (req, resizeBy, next) => {
         next(error)
     }
 })
+
+*/ 
 
 app.use("/api/products", productRoutes)
 
