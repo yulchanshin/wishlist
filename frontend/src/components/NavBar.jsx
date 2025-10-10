@@ -1,52 +1,54 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ShoppingCartIcon, ShoppingBagIcon } from 'lucide-react'
+import { BookmarkIcon, SparklesIcon, LogOutIcon, LogInIcon } from 'lucide-react'
+
 import ThemeSelector from './ThemeSelector'
+import { useProductStore } from '../store/useProductStore'
+import { useAuthStore } from '../store/useAuthStore'
 
 function NavBar() {
-  const {pathname} = useLocation()
-  const isHomePage = pathname === "/"
+  const { pathname } = useLocation()
+  const isHomePage = pathname === '/'
+  const products = useProductStore((state) => state.products)
+  const user = useAuthStore((state) => state.user)
+  const signInWithGoogle = useAuthStore((state) => state.signInWithGoogle)
+  const signOut = useAuthStore((state) => state.signOut)
 
   return (
-    <div className="bg-base-100/80 backdrop-blur-lg border-b border-base-content/10 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="navbar px-4 min-h-16 justify-between">
-          {/*LOGO*/}
-          <div className="flex-1 lg:flex-none">
-            <Link to="/" className="hover:opacity-80 transition-opacity">
-              <div className="flex items-center gap-2">
-                <ShoppingCartIcon className="size-9 text-primary" />
-                <span
-                  className="font-semibold font-mono tracking-widest text-2xl 
-                    bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary"
-  >
-                  Wishlist
-                </span>
-              </div>
-            </Link>
+    <header className="sticky top-0 z-50 border-b border-base-content/10 bg-base-100/80 backdrop-blur-xl">
+      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+          <span className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-base-100 shadow-lg">
+            <BookmarkIcon className="size-5" />
+          </span>
+          <div>
+            <span className="text-lg font-semibold leading-tight">Wishlist</span>
+            <p className="text-xs text-base-content/60">Curate. Share. Enjoy.</p>
           </div>
+        </Link>
 
-          {/*RIGHT SECTION*/}
-          <div className="flex items-center gap-4">
-            <ThemeSelector />
-            
-            {/*this makes sure that the cart icon is only shown in the homepage*/}
-            {isHomePage && (
-              <div className="indicator">
-                <div className="p-2 rounded-full hover:bg-base-200 transition-colors">
-                  <ShoppingBagIcon className="size-5" />
-                  <span className="badge badge-sm badge-primary indicator-item">
-                    8
-                  </span>
-                </div>
-              </div>
-
-
-            )}
-          </div>
+        <div className="flex items-center gap-3">
+          {isHomePage && user && (
+            <div className="hidden items-center gap-2 rounded-full border border-base-content/10 bg-base-100/80 px-3 py-1 text-sm text-base-content/70 sm:flex">
+              <SparklesIcon className="size-4 text-primary" />
+              {products.length} saved
+            </div>
+          )}
+          <ThemeSelector />
+          {user ? (
+            <button className="btn btn-sm btn-ghost gap-2" onClick={signOut}>
+              <LogOutIcon className="size-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
+          ) : (
+            <button className="btn btn-sm btn-primary gap-2" onClick={signInWithGoogle}>
+              <LogInIcon className="size-4" />
+              <span className="hidden sm:inline">Sign in</span>
+            </button>
+          )}
         </div>
-      </div>
-    </div>
+      </nav>
+    </header>
   )
 }
 

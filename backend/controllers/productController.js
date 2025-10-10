@@ -14,19 +14,19 @@ export const getProducts = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-    const { name, price, image } = req.body;
+    const { name, price, image, link } = req.body;
 
     if(!name || !price || !image) {
         return res.status(400).json({ success: false, message: "All fields are required" });
     }
     try{
-        const newproduct = await sql`
-         INSERT INTO products (name, price, image)
-         VALUES (${name}, ${price}, ${image})
+        const newProduct = await sql`
+         INSERT INTO products (name, price, image, link)
+         VALUES (${name}, ${price}, ${image}, ${link || null})
          RETURNING *
         `
-        console.log("new product added: ", newproduct);
-        res.status(201).json({ success: true, data: newproduct[0] });
+        console.log("new product added: ", newProduct);
+        res.status(201).json({ success: true, data: newProduct[0] });
     } catch (error) {
         console.log("Error createProduct", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -50,20 +50,20 @@ export const getProduct = async (req, res) => {
 }
 export const updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { name, price, image } = req.body;
+    const { name, price, image, link } = req.body;
 
     try {
-        await sql `
+        const updatedProduct = await sql`
         UPDATE products
-        SET name = ${name}, price = ${price}, image = ${image}
+        SET name = ${name}, price = ${price}, image = ${image}, link = ${link || null}
         WHERE id = ${id}
         RETURNING *`
 
-        if (updateProduct.length === 0) {
-            res.status(404).json({ success: false, message: "Product not found" });
+        if (updatedProduct.length === 0) {
+            return res.status(404).json({ success: false, message: "Product not found" });
         }
 
-        res.status(200).json({ success: true, data: updateProduct[0] });
+        res.status(200).json({ success: true, data: updatedProduct[0] });
     } catch (error) {
         console.log("Error updateProduct", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
