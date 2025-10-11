@@ -8,6 +8,14 @@ function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
+
+      if (error) {
+        console.error('OAuth callback error', error)
+        navigate('/?auth=error', { replace: true })
+        return
+      }
+
       await supabase.auth.getSession()
       navigate('/', { replace: true })
     }
