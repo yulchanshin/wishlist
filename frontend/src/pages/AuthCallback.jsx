@@ -8,7 +8,28 @@ function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
+      const url = new URL(window.location.href)
+      const authError = url.searchParams.get('error_description') || url.searchParams.get('error')
+      if (authError) {
+        console.error('OAuth callback error', authError)
+        navigate('/?auth=error', { replace: true })
+        return
+      }
+
+      const code = url.searchParams.get('code')
+      if (!code) {
+        const { data, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError || !data.session) {
+          console.error('OAuth callback error: missing code parameter')
+          navigate('/?auth=error', { replace: true })
+          return
+        }
+
+        navigate('/', { replace: true })
+        return  
+      }
+
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
 
       if (error) {
         console.error('OAuth callback error', error)

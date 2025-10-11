@@ -55,17 +55,22 @@ export const useProductStore = create((set, get) => ({
       .from('wishlists')
       .select('id, share_slug')
       .eq('owner_id', user.id)
-      .maybeSingle()
 
     if (error) {
       console.error('Fetch wishlist error', error)
       throw error
     }
 
-    if (data) {
-      const shareUrl = buildShareUrl(data.share_slug)
-      set({ wishlist: data, shareUrl })
-      return data
+    if (Array.isArray(data) && data.length > 1) {
+      console.warn('Multiple wishlists found for user, using the most recent entry')
+    }
+
+    const firstWishlist = Array.isArray(data) ? data[0] : data
+
+    if (firstWishlist) {
+      const shareUrl = buildShareUrl(firstWishlist.share_slug)
+      set({ wishlist: firstWishlist, shareUrl })
+      return firstWishlist
     }
 
     const newSlug = generateShareSlug()
