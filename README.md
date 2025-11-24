@@ -1,7 +1,9 @@
 # Wishlist
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/yulchanshin/wishlist)
 
 A modern, responsive wishlist application that allows users to curate, manage, and share their desired items. Built with React and Supabase, it provides a seamless experience for creating personal wishlists with rich details, including product links, prices, and images.
+
+## Try the demo out!
+Link: https://wishlist-khaki-two.vercel.app/
 
 ## Key Features
 
