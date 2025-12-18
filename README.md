@@ -1,37 +1,65 @@
-# Wishlist
+# 🎁 Wishlist App
 
-A modern, responsive wishlist application that allows users to curate, manage, and share their desired items. Built with React and Supabase, it provides a seamless experience for creating personal wishlists with rich details, including product links, prices, and images.
 
-## Try the demo out!
-Link: https://wishlist-khaki-two.vercel.app/
 
-## Key Features
+A modern, responsive wishlist application designed to help users curate, manage, and share their desired items. Built with **React 19** and **Supabase**, it offers a seamless experience with rich item details and social sharing capabilities.
 
-- **Google Authentication:** Secure and easy sign-in using Google OAuth.
-- **Wishlist Management:** Full CRUD (Create, Read, Update, Delete) functionality for wishlist items.
-- **Rich Item Details:** Add products with a name, price, image URL, and a direct link to the product page.
-- **Shareable Wishlists:** Generate a unique, shareable link for your wishlist to send to friends and family.
-- **Dynamic Theming:** Choose from a variety of pre-built themes to personalize the app's appearance.
-- **Responsive UI:** A clean interface built with Tailwind CSS and daisyUI that works beautifully on all devices.
+---
 
-## Tech Stack
+### 🚀 [Live Demo](https://wishlist-khaki-two.vercel.app/)
 
-- **Frontend:**
-  - [React](https://react.dev/) & [Vite](https://vitejs.dev/)
-  - [React Router](https://reactrouter.com/) for routing
-  - [Zustand](https://github.com/pmndrs/zustand) for state management
-  - [Tailwind CSS](https://tailwindcss.com/) & [daisyUI](https://daisyui.com/) for styling
-  - [lucide-react](https://lucide.dev/) for icons
-- **Backend & Database:**
-  - [Supabase](https://supabase.io/) (PostgreSQL Database, Authentication, Instant APIs)
+---
 
-## Supabase Setup
+## ✨ Features
 
-To run this project, you need to set up a Supabase backend.
+- **🔐 Google Authentication**: Secure and effortless sign-in using Google OAuth.
+- **📝 Complete Wishlist Management**: Create, read, update, and delete wishlist items with ease.
+- **🖼️ Rich Item Details**: Store comprehensive product info including name, price, image, and direct links.
+- **🤝 Shareable Wishlists**: Generate unique public links to share your wishlist with friends and family.
+- **🎨 Dynamic Theming**: Multiple pre-built themes to personalize your experience.
+- **📱 Responsive Design**: A mobile-first interface optimized for all devices using Tailwind CSS and DaisyUI.
 
-1.  **Create a Supabase Project:** Go to [supabase.com](https://supabase.com) and create a new project.
 
-2.  **Set up Database Schema:** In the Supabase SQL Editor, run the following queries to create the necessary tables and row-level security policies.
+## 🚀 Getting Started
+
+Follow these steps to set up the project locally.
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or bun
+
+### Installation
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yulchanshin/wishlist.git
+    cd wishlist
+    ```
+
+2.  **Install dependencies**
+    Navigate to the frontend directory:
+    ```bash
+    cd frontend
+    npm install
+    ```
+
+3.  **Environment Setup**
+    Create a `.env` file in the `frontend` directory:
+    ```bash
+    cp .env.example .env # if you have an example file, otherwise just create it
+    ```
+    Add your Supabase credentials:
+    ```env
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
+
+4.  **Database Setup (Supabase)**
+    Copy and run the SQL commands below in your Supabase SQL Editor to set up the schema and security policies.
+
+    <details>
+    <summary>📄 Click to view SQL Setup Queries</summary>
 
     ```sql
     -- Create the wishlists table
@@ -66,55 +94,33 @@ To run this project, you need to set up a Supabase backend.
     CREATE POLICY "Users can update their own wishlist" ON public.wishlists FOR UPDATE USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
 
     -- Policies for wishlist_items table
-    CREATE POLICY "Enable read access for all users" ON public.wishlist_items ഫോർ SELECT USING (true);
+    CREATE POLICY "Enable read access for all users" ON public.wishlist_items FOR SELECT USING (true);
     CREATE POLICY "Users can insert items to their wishlist" ON public.wishlist_items FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.wishlists WHERE id = wishlist_id AND owner_id = auth.uid()));
     CREATE POLICY "Users can update items in their wishlist" ON public.wishlist_items FOR UPDATE USING (EXISTS (SELECT 1 FROM public.wishlists WHERE id = wishlist_id AND owner_id = auth.uid()));
     CREATE POLICY "Users can delete items from their wishlist" ON public.wishlist_items FOR DELETE USING (EXISTS (SELECT 1 FROM public.wishlists WHERE id = wishlist_id AND owner_id = auth.uid()));
     ```
+    </details>
 
-3.  **Configure Google Auth:**
-    - In your Supabase project, navigate to `Authentication` -> `Providers` and enable `Google`.
-    - Follow the Supabase documentation to obtain your `Client ID` and `Client Secret` from the Google Cloud Console.
-    - In the Supabase Google provider settings, add your local development callback URL to `Redirect URIs`: `http://localhost:5173/auth/callback`. You will need to add your production URL here as well after deployment.
-
-## Getting Started
-
-Follow these instructions to get a copy of the project up and running on your local machine.
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/yulchanshin/wishlist.git
-    cd wishlist
-    ```
-2.  **Navigate to the Frontend Directory:**
-    ```bash
-    cd frontend
-    ```
-3.  **Install Dependencies:**
-    ```bash
-    npm install
-    ```
-4.  **Set Up Environment Variables:**
-    - Create a `.env` file in the `frontend` directory.
-    - In your Supabase project, navigate to `Settings` -> `API`.
-    - Copy the **Project URL** and the **`anon` public** key.
-    - Add them to your `.env` file:
-      ```env
-      VITE_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
-      VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-      ```
-
-5.  **Run the Development Server:**
+5.  **Run the application**
     ```bash
     npm run dev
     ```
-    Your application should now be running at `http://localhost:5173`.
+    The app will be available at `http://localhost:5173`.
 
-## Available Scripts
+## 📜 Scripts
 
-In the `frontend` directory, you can run the following scripts:
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npm run lint`: Run ESLint
 
--   `npm run dev`: Starts the application in development mode.
--   `npm run build`: Creates a production-ready build of the application.
--   `npm run lint`: Lints the code using ESLint.
--   `npm run preview`: Starts a local server to preview the production build.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: [React 19](https://react.dev/), [Vite](https://vitejs.dev/), [React Router 7](https://reactrouter.com/)
+
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/), [DaisyUI](https://daisyui.com/), [Lucide React](https://lucide.dev/)
+- **Backend & Database**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
+
+## 📝 License
+
+This project is licensed under the MIT License.
