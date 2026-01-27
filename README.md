@@ -16,9 +16,17 @@ A modern, responsive wishlist application designed to help users curate, manage,
 - **📝 Complete Wishlist Management**: Create, read, update, and delete wishlist items with ease.
 - **🖼️ Rich Item Details**: Store comprehensive product info including name, price, image, and direct links.
 - **🤝 Shareable Wishlists**: Generate unique public links to share your wishlist with friends and family.
+- **🔄 Privacy Controls**: Regenerate share links anytime to invalidate old URLs.
 - **🎨 Dynamic Theming**: Multiple pre-built themes to personalize your experience.
 - **📱 Responsive Design**: A mobile-first interface optimized for all devices using Tailwind CSS and DaisyUI.
 
+## 📚 Documentation
+
+- **[Quick Start Guide](./QUICK_START_GUIDE.md)** - User-friendly guide for sharing and viewing wishlists
+- **[Share Feature Guide](./SHARE_FEATURE_GUIDE.md)** - Comprehensive technical documentation of the share feature
+- **[Database Architecture](./DATABASE_ARCHITECTURE.md)** - Detailed database schema, RLS policies, and data flows
+
+---
 
 ## 🚀 Getting Started
 
