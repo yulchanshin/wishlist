@@ -4,16 +4,50 @@ import { PackageIcon, ArrowLeftIcon, ExternalLinkIcon } from 'lucide-react'
 
 import { supabase } from '../lib/supabaseClient'
 
+/**
+ * SharedWishlistPage - Public viewing page for shared wishlists
+ * 
+ * This page allows ANYONE (authenticated or not) to view a wishlist
+ * by accessing the unique share URL: /share/:slug
+ * 
+ * Flow:
+ * 1. Extract slug from URL params
+ * 2. Query database for wishlist with matching share_slug
+ * 3. If found, fetch all items for that wishlist
+ * 4. Display items in a grid with images, prices, and product links
+ * 
+ * Security:
+ * - No authentication required (public viewing)
+ * - Read-only access (cannot modify items)
+ * - RLS policies allow SELECT on wishlists and wishlist_items tables
+ * 
+ * Error Handling:
+ * - Invalid slug → Show "Link not available" message
+ * - No items → Show empty state
+ * - Database error → Show error message
+ */
 function SharedWishlistPage() {
-  const { slug } = useParams()
+  const { slug } = useParams() // Extract slug from URL: /share/:slug
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [items, setItems] = useState([])
 
   useEffect(() => {
+    /**
+     * Fetches the shared wishlist and its items from the database
+     * 
+     * Two-step process:
+     * 1. Find wishlist by share_slug (the unique identifier in URL)
+     * 2. If found, fetch all items belonging to that wishlist
+     * 
+     * Note: This works WITHOUT authentication because RLS policies
+     * allow public SELECT on both wishlists and wishlist_items tables
+     */
     const fetchSharedWishlist = async () => {
       setLoading(true)
       setError(null)
+      
+      // Step 1: Find the wishlist by its unique share_slug
       const { data: wishlist, error: wishlistError } = await supabase
         .from('wishlists')
         .select('id, share_slug, owner_id')
@@ -26,6 +60,7 @@ function SharedWishlistPage() {
         return
       }
 
+      // Step 2: Fetch all items for this wishlist
       const { data: itemsData, error: itemsError } = await supabase
         .from('wishlist_items')
         .select('id, name, price, image, link, created_at')

@@ -4,6 +4,18 @@ import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabaseClient'
 import { useAuthStore } from './useAuthStore'
 
+/**
+ * Generates a unique 12-character alphanumeric slug for sharing
+ * Used as the unique identifier in share URLs (e.g., /share/abc123xyz789)
+ * 
+ * Algorithm:
+ * 1. Prefers crypto.randomUUID() for cryptographic randomness (modern browsers)
+ * 2. Falls back to Math.random() for older browsers
+ * 3. Removes hyphens and truncates to 12 characters
+ * 
+ * @returns {string} 12-character random alphanumeric string
+ * @example generateShareSlug() // "7a8b9c0d1e2f"
+ */
 const generateShareSlug = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID().replace(/-/g, '').slice(0, 12)
@@ -11,19 +23,46 @@ const generateShareSlug = () => {
   return Math.random().toString(36).slice(2, 14)
 }
 
+/**
+ * Builds the complete shareable URL from a slug
+ * Constructs the full public URL that can be shared with others
+ * 
+ * @param {string} slug - The unique wishlist identifier
+ * @returns {string} Complete shareable URL
+ * @example buildShareUrl('abc123') // "https://myapp.com/share/abc123"
+ */
 const buildShareUrl = (slug) => {
   if (typeof window === 'undefined') return ''
   return `${window.location.origin}/share/${slug}`
 }
 
+/**
+ * Zustand store for managing wishlists, products, and sharing functionality
+ * 
+ * State:
+ * - products: Array of wishlist items
+ * - wishlist: Current user's wishlist metadata (id, share_slug)
+ * - shareUrl: Full shareable URL (e.g., "https://app.com/share/abc123")
+ * - loading: Loading state for async operations
+ * - error: Error message if operations fail
+ * - currentProduct: Product being viewed/edited
+ * - formData: Form state for add/edit operations
+ * 
+ * Key Features:
+ * - Auto-creates wishlist on first use
+ * - Generates unique share links
+ * - Supports regenerating share links for privacy
+ * - Copy-to-clipboard functionality
+ */
 export const useProductStore = create((set, get) => ({
-  products: [],
-  wishlist: null,
-  loading: false,
-  error: null,
-  currentProduct: null,
-  shareUrl: null,
+  products: [], // Array of wishlist items from database
+  wishlist: null, // Current wishlist { id, share_slug }
+  loading: false, // Loading state for async operations
+  error: null, // Error message if any
+  currentProduct: null, // Product being edited/viewed
+  shareUrl: null, // Full shareable URL (built from share_slug)
   formData: {
+    // Form state for add/edit modals
     name: '',
     price: '',
     image: '',
@@ -41,16 +80,45 @@ export const useProductStore = create((set, get) => ({
       },
     }),
 
+  /**
+   * Ensures the current user has a wishlist, creating one if needed
+   * This is the KEY function for the share feature!
+   * 
+   * Flow:
+   * 1. Check if user is authenticated
+   * 2. If wishlist exists in state, return it
+   * 3. Try to fetch existing wishlist from database
+   * 4. If not found, create new wishlist with unique share_slug
+   * 5. Build and store the shareable URL
+   * 
+   * @returns {Promise<Object|null>} Wishlist object with id and share_slug, or null if no user
+   */
+  /**
+   * Ensures the current user has a wishlist, creating one if needed
+   * This is the KEY function for the share feature!
+   * 
+   * Flow:
+   * 1. Check if user is authenticated
+   * 2. If wishlist exists in state, return it
+   * 3. Try to fetch existing wishlist from database
+   * 4. If not found, create new wishlist with unique share_slug
+   * 5. Build and store the shareable URL
+   * 
+   * @returns {Promise<Object|null>} Wishlist object with id and share_slug, or null if no user
+   */
   ensureWishlist: async () => {
     const { user } = useAuthStore.getState()
     if (!user) {
+      // No user = no wishlist, clear everything
       set({ wishlist: null, shareUrl: null, products: [], currentProduct: null })
       return null
     }
 
+    // If wishlist already in state, return it (avoid duplicate queries)
     const { wishlist } = get()
     if (wishlist) return wishlist
 
+    // Try to fetch existing wishlist from database
     const { data, error } = await supabase
       .from('wishlists')
       .select('id, share_slug')
@@ -67,13 +135,15 @@ export const useProductStore = create((set, get) => ({
 
     const firstWishlist = Array.isArray(data) ? data[0] : data
 
+    // Wishlist exists - build share URL and store in state
     if (firstWishlist) {
       const shareUrl = buildShareUrl(firstWishlist.share_slug)
       set({ wishlist: firstWishlist, shareUrl })
       return firstWishlist
     }
 
-    const newSlug = generateShareSlug()
+    // No wishlist found - create a new one with unique slug
+    const newSlug = generateShareSlug() // Generate unique 12-char identifier
     const { data: insertData, error: insertError } = await supabase
       .from('wishlists')
       .insert({ owner_id: user.id, share_slug: newSlug })
@@ -85,6 +155,7 @@ export const useProductStore = create((set, get) => ({
       throw insertError
     }
 
+    // Build share URL and store in state
     const shareUrl = buildShareUrl(insertData.share_slug)
     set({ wishlist: insertData, shareUrl })
     return insertData
@@ -257,6 +328,19 @@ export const useProductStore = create((set, get) => ({
     }
   },
 
+  /**
+   * Regenerates the share link with a new unique slug
+   * Use case: User wants to invalidate old share link for privacy/security
+   * 
+   * Flow:
+   * 1. Verify user is authenticated
+   * 2. Ensure wishlist exists
+   * 3. Generate new random slug
+   * 4. Update database with new slug
+   * 5. Update state with new URL
+   * 
+   * Effect: Old share link becomes invalid, new link is ready to share
+   */
   regenerateShareLink: async () => {
     const { user } = useAuthStore.getState()
     if (!user) {
@@ -266,10 +350,12 @@ export const useProductStore = create((set, get) => ({
 
     const { wishlist } = get()
     if (!wishlist) {
+      // No wishlist yet - create one first, then regenerate
       await get().ensureWishlist()
       return get().regenerateShareLink()
     }
 
+    // Generate new unique slug
     const newSlug = generateShareSlug()
     const { data, error } = await supabase
       .from('wishlists')
@@ -284,11 +370,21 @@ export const useProductStore = create((set, get) => ({
       return
     }
 
+    // Build new share URL and update state
     const shareUrl = buildShareUrl(data.share_slug)
     set({ wishlist: data, shareUrl })
     toast.success('Share link updated')
   },
 
+  /**
+   * Copies the share link to the user's clipboard
+   * Uses the Clipboard API for modern browsers
+   * 
+   * Requirements:
+   * - Must be called from user interaction (button click)
+   * - Requires HTTPS (except localhost)
+   * - Browser must support navigator.clipboard
+   */
   copyShareLink: async () => {
     const { shareUrl } = get()
     if (!shareUrl) {
